@@ -7,7 +7,8 @@ int main(int argc, char *argv[])
 {
     Glc gramatica;
     gramatica.carregar_arquivo(argv[1]);
-    gramatica.eliminar_lambdas();
+    gramatica.regras_cadeia();
     cout << gramatica.stringficar();
+
     return 0;
 }

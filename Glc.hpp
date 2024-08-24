@@ -33,6 +33,7 @@ public:
     void escrever_arquivo(string caminho);
     void eliminar_lambdas();
     void print();
+    void regras_cadeia();
 };
 
 #endif // GLC_H
