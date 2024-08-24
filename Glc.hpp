@@ -25,7 +25,7 @@ public:
     Glc();
     void nova_variavel(string var);
     void adicionar_regra(string var, string prod);
-    string remover_regra(string var, string regra);
+    void remover_regra(string var, string regra);
     void remover_variavel(string var);
     set<string>* produzir_variantes(string regra, vector<int> posicoes, set<string>& anulaveis);
 
@@ -35,6 +35,7 @@ public:
     void eliminar_lambdas();
     void print();
     void regras_cadeia();
+    void reach();
 };
 
 #endif // GLC_H
