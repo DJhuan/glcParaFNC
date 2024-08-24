@@ -79,18 +79,11 @@ void Glc::nova_variavel(string var)
     }
 }
 
-string Glc::remover_regra(string var, string regra)
+void Glc::remover_regra(string var, string regra)
 {
     vector<string> &vec = regras[var];
-    // iteradorRegra recebe o iterador na posição que o elemento foi encontrado
-    auto iteradorRegra = remove(vec.begin(), vec.end(), regra);
-    // Salvamos o valor de fato apontado pelo iterador
-    string regraEncontrada = *iteradorRegra;
-    // Apagamos o valor do vetor
-    vec.erase(iteradorRegra, vec.end());
-
-    // Retornamos o valor
-    return regraEncontrada;
+    vec.erase(remove(vec.begin(), vec.end(), regra), vec.end());
+   
 }
 
 void Glc::remover_variavel(string var)
@@ -224,6 +217,7 @@ void Glc::regras_cadeia()
             }
         }
     }
+    
 }
 
 void Glc::reach()

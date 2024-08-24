@@ -25,7 +25,7 @@ public:
     Glc();
     void nova_variavel(string var);
     void adicionar_regra(string var, string prod);
-    string remover_regra(string var, string regra);
+    void remover_regra(string var, string regra);
     void remover_variavel(string var);
 
     string stringficar();
