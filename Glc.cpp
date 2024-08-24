@@ -79,10 +79,18 @@ void Glc::nova_variavel(string var)
     }
 }
 
-void Glc::remover_regra(string var, string regra)
+string Glc::remover_regra(string var, string regra)
 {
     vector<string> &vec = regras[var];
-    vec.erase(remove(vec.begin(), vec.end(), regra), vec.end());
+    // iteradorRegra recebe o iterador na posição que o elemento foi encontrado
+    auto iteradorRegra = remove(vec.begin(), vec.end(), regra);
+    // Salvamos o valor de fato apontado pelo iterador
+    string regraEncontrada = *iteradorRegra;
+    // Apagamos o valor do vetor
+    vec.erase(iteradorRegra, vec.end());
+
+    // Retornamos o valor
+    return regraEncontrada;
 }
 
 void Glc::remover_variavel(string var)
@@ -151,57 +159,72 @@ string Glc::stringficar()
     return stringGramatica;
 }
 
+void Glc::eliminar_lambdas()
+{
+}
+
 void Glc::regras_cadeia()
 {
-    //Cria o chain
+    // Cria o chain
     unordered_map<string, vector<string>> chain;
-    for (int i = 0; i < ordemRegras.size(); i++){
-        //Cria o prev e o new
+    for (int i = 0; i < ordemRegras.size(); i++)
+    {
+        // Cria o prev e o new
         string variavel = ordemRegras[i];
         chain[variavel].push_back(variavel);
         vector<string> Prev;
         vector<string> New;
-        do{
-            //new = chain[variavel] - prev
+        do
+        {
+            // new = chain[variavel] - prev
             New.clear();
             set_difference(chain[variavel].begin(), chain[variavel].end(), Prev.begin(), Prev.end(), back_inserter(New));
             Prev = chain[variavel];
-            for (int j = 0; j < New.size(); j++){
+            for (int j = 0; j < New.size(); j++)
+            {
                 vector<string> &vetor = regras[New[j]];
-                for (int k = 0; k < vetor.size(); k++){
-                    if (vetor[k].size() == 1 and isupper(vetor[k][0])){
-                        //Se for um caracter maiúsculo e não estiver no chain, adiciona no chain
-                        if (find(chain[variavel].begin(), chain[variavel].end(), vetor[k]) == chain[variavel].end()) {
+                for (int k = 0; k < vetor.size(); k++)
+                {
+                    if (vetor[k].size() == 1 and isupper(vetor[k][0]))
+                    {
+                        // Se for um caracter maiúsculo e não estiver no chain, adiciona no chain
+                        if (find(chain[variavel].begin(), chain[variavel].end(), vetor[k]) == chain[variavel].end())
+                        {
                             chain[variavel].push_back(vetor[k]);
                         }
-                    } 
+                    }
                 }
             }
-        }while (!equal(chain[variavel].begin(), chain[variavel].end(), Prev.begin()));
+        } while (!equal(chain[variavel].begin(), chain[variavel].end(), Prev.begin()));
     }
 
-    //Tira as regras de cadeia da gramática
-    for (int i = 0; i < ordemRegras.size(); i++){
+    // Tira as regras de cadeia da gramática
+    for (int i = 0; i < ordemRegras.size(); i++)
+    {
         string variavel = ordemRegras[i];
-        for (int j = 0; j < chain[variavel].size(); j++){
+        for (int j = 0; j < chain[variavel].size(); j++)
+        {
             remover_regra(variavel, chain[variavel][j]);
         }
     }
 
-    //Adiciona as regras das variáveis retiradas de cada variável
-    for (int i = 0; i < ordemRegras.size(); i++){
+    // Adiciona as regras das variáveis retiradas de cada variável
+    for (int i = 0; i < ordemRegras.size(); i++)
+    {
         string variavel = ordemRegras[i];
-        for (int j = 0; j < chain[variavel].size(); j++){
+        for (int j = 0; j < chain[variavel].size(); j++)
+        {
             string varNoChain = chain[variavel][j];
-            for (int k = 0; k < regras[varNoChain].size(); k++){
-                if (find(regras[variavel].begin(), regras[variavel].end(), regras[varNoChain][k]) == regras[variavel].end()) {
+            for (int k = 0; k < regras[varNoChain].size(); k++)
+            {
+                if (find(regras[variavel].begin(), regras[variavel].end(), regras[varNoChain][k]) == regras[variavel].end())
+                {
                     adicionar_regra(variavel, regras[varNoChain][k]);
                 }
             }
         }
     }
 }
-
 
 // Later removal ==================
 
