@@ -6,6 +6,65 @@ using namespace std;
 
 Glc::Glc() {}
 
+bool Glc::eh_regra_anulavel(string regra, set<string> &anulaveis)
+{
+    if (regra == ".")
+        return true;
+
+    for (int i = 0; i < regra.length(); i++)
+    {
+        // A variável ponteiro recebe a posição do item buscado
+        auto ponteiro = anulaveis.find(string(1, regra[i]));
+        /*
+            Se o ponteiro estiver apontando para o final do set, significa
+            que ele não foi encontrado, logo, a regra não é completamente
+            anulável.
+        */
+        if (ponteiro == anulaveis.end())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+set<string> Glc::encontrar_anulaveis()
+{
+    set<string> anulaveis;
+
+    int tamAnulaveis = anulaveis.size();
+    int tamAnuAntigo = -1;
+    while (tamAnulaveis != tamAnuAntigo)
+    {
+        // Enquanto forem descobertos novos atuláveis, busca-se por novos
+        // Para cada variável que existe
+        for (int i = 0; i < ordemRegras.size(); i++)
+        {
+            vector<string> &vetVar = regras[ordemRegras[i]];
+            bool encontrado = false;
+            /*
+                Buscamos dentro das suas regras se:
+                    É possível encontrar lambda ('.')
+                    É possível que a regra se anule
+                Caso uma anulavel seja encontrada, paramos o loop.
+            */
+            for (int j = 0; j < (vetVar.size()) && !encontrado; ++j)
+            {
+                if (eh_regra_anulavel(vetVar[j], anulaveis))
+                {
+                    anulaveis.insert(ordemRegras[i]);
+                    encontrado = true;
+                }
+            }
+        }
+        tamAnuAntigo = tamAnulaveis;
+        tamAnulaveis = anulaveis.size();
+    }
+
+    return anulaveis;
+}
+
 void Glc::adicionar_regra(string var, string prod)
 {
     regras[var].push_back(prod);
@@ -47,6 +106,7 @@ void Glc::carregar_arquivo(string caminho)
         nova_variavel(var);
         buffer.erase(0, pos + delimitador.length());
 
+        // regra armazena uma das regas da V atual
         string regra;
         delimitador = " | ";
         while ((pos = buffer.find(delimitador)) != string::npos)
@@ -90,3 +150,21 @@ string Glc::stringficar()
 
     return stringGramatica;
 }
+
+
+// Later removal ==================
+
+void Glc::print()
+{
+    set<string> a;
+    a.insert("A");
+    a.insert("B");
+    if (eh_regra_anulavel("AB", a))
+        cout << "1SIM\n";
+    if (eh_regra_anulavel("A", a))
+        cout << "2SIM\n";
+    if (eh_regra_anulavel("CA", a))
+        cout << "3SIM\n";
+}
+
+// Later removal ==================
