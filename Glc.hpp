@@ -27,6 +27,7 @@ public:
     void adicionar_regra(string var, string prod);
     string remover_regra(string var, string regra);
     void remover_variavel(string var);
+    set<string>* produzir_variantes(string regra, vector<int> posicoes, set<string>& anulaveis);
 
     string stringficar();
     void carregar_arquivo(string caminho);

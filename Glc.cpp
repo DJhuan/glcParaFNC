@@ -1,4 +1,5 @@
 #include "Glc.hpp"
+#include "ArranjoBin.hpp"
 #include <algorithm>
 #include <fstream>
 
@@ -67,7 +68,11 @@ set<string> Glc::encontrar_anulaveis()
 
 void Glc::adicionar_regra(string var, string prod)
 {
-    regras[var].push_back(prod);
+    // Adiciona uma regra ao unordered_map se ela não existir.
+    if (find(regras[var].begin(), regras[var].end(), prod) == regras[var].end())
+    {
+        regras[var].push_back(prod);
+    }
 }
 
 void Glc::nova_variavel(string var)
@@ -161,6 +166,109 @@ string Glc::stringficar()
 
 void Glc::eliminar_lambdas()
 {
+    set<string> anulaveis = encontrar_anulaveis();
+    anulaveis.insert(".");
+
+    for (int i = 0; i < ordemRegras.size(); i++)
+    {
+        vector<string> &vetVar = regras[ordemRegras[i]];
+
+        vector<string> novasRegras;
+        for (auto &regra : vetVar)
+        {
+            int tamRegra = regra.size();
+            vector<int> posicoesRemoviveis;
+            for (int j = 0; j < tamRegra; j++)
+            {
+                // Verifica se há caracteres anuláveis e regista a posição deles
+                if (anulaveis.find(string(1, regra[j])) != anulaveis.end())
+                {
+                    posicoesRemoviveis.push_back(j);
+                }
+            }
+
+            // Caso haja alguma edição que possa ser feita
+            if (!posicoesRemoviveis.empty())
+            {
+                // Produz todas as variantes sem lambda
+                set<string> *variantes = produzir_variantes(regra, posicoesRemoviveis, anulaveis);
+
+                for (const string &variante : *variantes)
+                {
+                    // Verifica todas as regras que são novas
+                    if (find(vetVar.begin(), vetVar.end(), variante) == vetVar.end())
+                    {
+                        novasRegras.push_back(variante);
+                    }
+                }
+                delete variantes;
+            }
+        }
+
+        // Remove geras anulaveis e lambda exceto no inicial
+
+        if (i == 0)
+        {
+            // Adiciona todas as regras novas no símbolo inicial
+            for (const string &novaRegra : novasRegras)
+            {
+                vetVar.push_back(novaRegra);
+            }
+        }
+        else
+        {
+            // Adiciona regras novas nos símbolos não iniciais
+            for (auto iterador = vetVar.begin(); iterador != vetVar.end();)
+            {
+                if (*iterador == ".")
+                {
+                    iterador = vetVar.erase(iterador);
+                }
+                else
+                    iterador++;
+            }
+            // Adiciona todas as regras novas
+            for (const string &novaRegra : novasRegras)
+            {
+                if (novaRegra != ".")
+                    vetVar.push_back(novaRegra);
+            }
+        }
+    }
+}
+
+set<string> *Glc::produzir_variantes(string regra, vector<int> posicoes, set<string> &anulaveis)
+{
+    set<string> *variacoes = new set<string>;
+
+    ArranjoBin combinacao(posicoes.size());
+
+    string copiaRegra;
+    for (int i = 0; i < (1 << posicoes.size()); i++)
+    {
+        copiaRegra = regra;
+
+        int k = 0; // k ajuda a ajustar o offset das remoções
+        for (int j = 0; j < posicoes.size(); j++)
+        {
+            if (combinacao.arranjo[j])
+            {
+                copiaRegra.erase(posicoes[j] - k, 1);
+                k++;
+            }
+        }
+
+        if (copiaRegra != "")
+        {
+            variacoes->insert(copiaRegra);
+        }
+        else
+            variacoes->insert(".");
+
+        combinacao.somar_um();
+    }
+
+    return variacoes;
 }
 
 void Glc::regras_cadeia()

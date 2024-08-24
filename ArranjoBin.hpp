@@ -10,7 +10,7 @@ class ArranjoBin
         Essa classe representa um número binário na forma de arranjo
         e é usada na remoção de variáveis anuláveis como uma combinação;
     */
-private:
+public:
     int tamanho;
     bool *arranjo;
 

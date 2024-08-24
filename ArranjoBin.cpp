@@ -5,7 +5,7 @@ using namespace std;
 ArranjoBin::ArranjoBin(int tam)
 {
     tamanho = tam;
-    arranjo = new bool[tam];
+    arranjo = new bool[tam] {false};
 }
 
 void ArranjoBin::somar_um()
