@@ -34,6 +34,7 @@ public:
     void eliminar_lambdas();
     void print();
     void regras_cadeia();
+    void reach();
 };
 
 #endif // GLC_H

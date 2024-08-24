@@ -226,6 +226,62 @@ void Glc::regras_cadeia()
     }
 }
 
+void Glc::reach()
+{
+    // Cria o reach, o prev e o new
+    vector<string> reach;
+    reach.push_back(ordemRegras[0]); //O símbolo inicial sempre será alcançável
+    vector<string> Prev;
+    vector<string> New;
+
+    do{
+        New.clear();
+        // new = reach-prev
+        set_difference(reach.begin(), reach.end(), Prev.begin(), Prev.end(), back_inserter(New));
+        Prev = reach;
+        //Pega as variáveis que estão no new
+        for (int i = 0; i < New.size(); i++){
+            string variavel = New[i];
+            //Pega cada w produzido pelas variáveis
+            for (int j = 0; j < regras[variavel].size(); j++){
+                string w = regras[variavel][j];
+                for (int k = 0; k < w.size(); k++){
+                    if (isupper(w[k])){
+                        // Converte w(char) em string
+                        string wEmString (1, w[k]);
+                        //Procura a variável no reach
+                        if (find(reach.begin(), reach.end(), wEmString) == reach.end()){
+                            reach.push_back(wEmString);
+                        }
+                    }
+                }
+            }
+        }
+    } while (!equal(reach.begin(), reach.end(), Prev.begin()));
+
+    // Cria o vetor das variáveis inalcançáveis
+    vector<string> inalcancaveis;
+    set_difference(ordemRegras.begin(), ordemRegras.end(), reach.begin(), reach.end(), back_inserter(inalcancaveis));
+
+    for (int i = 0; i < inalcancaveis.size(); i++){
+        // Apaga a variável e as regras produzidas por ela
+        remover_variavel(inalcancaveis[i]);
+        for (int j = 0; j < ordemRegras.size(); j++){
+            string variavel = ordemRegras[j];
+            for (int k = 0; k < regras[variavel].size(); k++){
+                string w = regras[variavel][k];
+                for (int z = 0; z < w.size(); z++){
+                    string wEmString(1, w[k]);
+                    // Remove todas as regras que contêm a variável removida
+                    if (wEmString == inalcancaveis[i]){
+                        remover_regra(variavel, w);
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Later removal ==================
 
 void Glc::print()
