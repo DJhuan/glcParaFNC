@@ -23,6 +23,7 @@ public:
     string stringficar();
     void carregar_arquivo(string caminho);
     void escrever_arquivo(string caminho);
+    void regras_cadeia();
 };
 
 #endif // GLC_H

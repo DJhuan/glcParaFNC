@@ -8,7 +8,8 @@ int main(int argc, char *argv[])
 
     Glc gramatica;
     gramatica.carregar_arquivo(argv[1]);
-    cout << gramatica.stringficar() << endl;
+    gramatica.regras_cadeia();
+    cout << gramatica.stringficar();
 
     return 0;
 }
