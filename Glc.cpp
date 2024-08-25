@@ -8,6 +8,108 @@ using namespace std;
 
 Glc::Glc() {}
 
+// Funções auxiliares
+
+void Glc::carregar_arquivo(string caminho)
+{
+    ifstream arqLeitura(caminho);
+
+    for (string buffer; getline(arqLeitura, buffer);)
+    {
+        // pos armazena a posição em que começa ->
+        string delimitador = " -> ";
+        int pos = buffer.find(delimitador);
+
+        // var armazena a variável à esquerda de ->
+        string var = buffer.substr(0, pos);
+        nova_variavel(var);
+        buffer.erase(0, pos + delimitador.length());
+
+        // regra armazena uma das regas da V atual
+        string regra;
+        delimitador = " | ";
+        while ((pos = buffer.find(delimitador)) != string::npos)
+        {
+            regra = buffer.substr(0, pos);
+            adicionar_regra(var, regra);
+            buffer.erase(0, pos + delimitador.length());
+        }
+        adicionar_regra(var, buffer);
+    }
+}
+
+void Glc::escrever_arquivo(string caminho)
+{
+    ofstream arq(caminho);
+    arq << stringficar();
+}
+
+void Glc::adicionar_regra(string var, string prod)
+{
+    // Adiciona uma regra ao unordered_map se ela não existir.
+    if (find(regras[var].begin(), regras[var].end(), prod) == regras[var].end())
+    {
+        regras[var].push_back(prod);
+    }
+}
+
+void Glc::nova_variavel(string var)
+{
+    regras[var];
+    if (find(ordemRegras.begin(), ordemRegras.end(), var) == ordemRegras.end())
+    {
+        ordemRegras.push_back(var);
+    }
+}
+
+void Glc::remover_regra(string var, string regra)
+{
+    auto pos = find(regras[var].begin(), regras[var].end(), regra);
+    if (pos != regras[var].end())
+    {
+        regras[var].erase(pos);
+    }
+}
+
+void Glc::remover_variavel(string var)
+{
+    regras.erase(var);
+    auto pos = find(ordemRegras.begin(), ordemRegras.end(), var);
+
+    if (pos != ordemRegras.end())
+    {
+        ordemRegras.erase(pos);
+    }
+}
+
+string Glc::stringficar()
+{
+    // Transforma a gramática em string;
+    string stringGramatica = "";
+
+    for (int i = 0; i < ordemRegras.size(); i++)
+    {
+        stringGramatica += ordemRegras[i] + " -> ";
+
+        // Cria uma renomeação (referência) temporária para o vetor dos produtos atuais;
+        vector<string> &vetVar = regras[ordemRegras[i]];
+
+        for (size_t i = 0; i < vetVar.size(); ++i)
+        {
+            stringGramatica += vetVar[i] + ' ';
+            if (i != (vetVar.size() - 1))
+            {
+                stringGramatica += "| ";
+            }
+        }
+        stringGramatica += '\n';
+    }
+
+    return stringGramatica;
+}
+
+// 1- Remover recursividade inicial
+
 void Glc::remover_recursividade_inicial() 
 {
     string variavel_inicial = ordemRegras[0]; // Supondo que o símbolo inicial é sempre o primeiro
@@ -36,6 +138,8 @@ void Glc::remover_recursividade_inicial()
         ordemRegras.erase(remove(ordemRegras.begin() + 1, ordemRegras.end(), nova_var), ordemRegras.end());
     }
 }
+
+// 2- Remover regras lambda
 
 bool Glc::eh_regra_anulavel(string regra, set<string> &anulaveis)
 {
@@ -94,97 +198,6 @@ set<string> Glc::encontrar_anulaveis()
     }
 
     return anulaveis;
-}
-
-void Glc::adicionar_regra(string var, string prod)
-{
-    // Adiciona uma regra ao unordered_map se ela não existir.
-    if (find(regras[var].begin(), regras[var].end(), prod) == regras[var].end())
-    {
-        regras[var].push_back(prod);
-    }
-}
-
-void Glc::nova_variavel(string var)
-{
-    regras[var];
-    if (find(ordemRegras.begin(), ordemRegras.end(), var) == ordemRegras.end())
-    {
-        ordemRegras.push_back(var);
-    }
-}
-
-void Glc::remover_regra(string var, string regra)
-{
-    vector<string> &vec = regras[var];
-    vec.erase(remove(vec.begin(), vec.end(), regra), vec.end());
-   
-}
-
-void Glc::remover_variavel(string var)
-{
-    regras.erase(var);
-    ordemRegras.erase(remove(ordemRegras.begin(), ordemRegras.end(), var), ordemRegras.end());
-}
-
-void Glc::carregar_arquivo(string caminho)
-{
-    ifstream arqLeitura(caminho);
-
-    for (string buffer; getline(arqLeitura, buffer);)
-    {
-        // pos armazena a posição em que começa ->
-        string delimitador = " -> ";
-        int pos = buffer.find(delimitador);
-
-        // var armazena a variável à esquerda de ->
-        string var = buffer.substr(0, pos);
-        nova_variavel(var);
-        buffer.erase(0, pos + delimitador.length());
-
-        // regra armazena uma das regas da V atual
-        string regra;
-        delimitador = " | ";
-        while ((pos = buffer.find(delimitador)) != string::npos)
-        {
-            regra = buffer.substr(0, pos);
-            adicionar_regra(var, regra);
-            buffer.erase(0, pos + delimitador.length());
-        }
-        adicionar_regra(var, buffer);
-    }
-}
-
-void Glc::escrever_arquivo(string caminho)
-{
-    ofstream arq(caminho);
-    arq << stringficar();
-}
-
-string Glc::stringficar()
-{
-    // Transforma a gramática em string;
-    string stringGramatica = "";
-
-    for (int i = 0; i < ordemRegras.size(); i++)
-    {
-        stringGramatica += ordemRegras[i] + " -> ";
-
-        // Cria uma renomeação (referência) temporária para o vetor dos produtos atuais;
-        vector<string> &vetVar = regras[ordemRegras[i]];
-
-        for (size_t i = 0; i < vetVar.size(); ++i)
-        {
-            stringGramatica += vetVar[i] + ' ';
-            if (i != (vetVar.size() - 1))
-            {
-                stringGramatica += "| ";
-            }
-        }
-        stringGramatica += '\n';
-    }
-
-    return stringGramatica;
 }
 
 void Glc::eliminar_lambdas()
@@ -294,14 +307,15 @@ set<string> *Glc::produzir_variantes(string regra, vector<int> posicoes, set<str
     return variacoes;
 }
 
+// 3- Eliminação de regras da cadeia
+
 void Glc::regras_cadeia()
 {
     // Cria o chain
     unordered_map<string, vector<string>> chain;
-    for (int i = 0; i < ordemRegras.size(); i++)
+    for (const auto& variavel: ordemRegras)
     {
         // Cria o prev e o new
-        string variavel = ordemRegras[i];
         chain[variavel].push_back(variavel);
         vector<string> Prev;
         vector<string> New;
@@ -311,17 +325,17 @@ void Glc::regras_cadeia()
             New.clear();
             set_difference(chain[variavel].begin(), chain[variavel].end(), Prev.begin(), Prev.end(), back_inserter(New));
             Prev = chain[variavel];
-            for (int j = 0; j < New.size(); j++)
+            for (const auto& varNoNew: New)
             {
-                vector<string> &vetor = regras[New[j]];
-                for (int k = 0; k < vetor.size(); k++)
+                vector<string> &vetor = regras[varNoNew];
+                for (const auto& regra: vetor)
                 {
-                    if (vetor[k].size() == 1 and isupper(vetor[k][0]))
+                    if (regra.size() == 1 and isupper(regra[0]))
                     {
                         // Se for um caracter maiúsculo e não estiver no chain, adiciona no chain
-                        if (find(chain[variavel].begin(), chain[variavel].end(), vetor[k]) == chain[variavel].end())
+                        if (find(chain[variavel].begin(), chain[variavel].end(), regra) == chain[variavel].end())
                         {
-                            chain[variavel].push_back(vetor[k]);
+                            chain[variavel].push_back(regra);
                         }
                     }
                 }
@@ -330,103 +344,32 @@ void Glc::regras_cadeia()
     }
 
     // Tira as regras de cadeia da gramática
-    for (int i = 0; i < ordemRegras.size(); i++)
+    for (const auto& variavel: ordemRegras)
     {
-        string variavel = ordemRegras[i];
-        for (int j = 0; j < chain[variavel].size(); j++)
+        for (const auto& regra: chain[variavel])
         {
-            remover_regra(variavel, chain[variavel][j]);
+            remover_regra(variavel, regra);
         }
     }
 
     // Adiciona as regras das variáveis retiradas de cada variável
-    for (int i = 0; i < ordemRegras.size(); i++)
+    for (const auto& variavel: ordemRegras)
     {
-        string variavel = ordemRegras[i];
-        for (int j = 0; j < chain[variavel].size(); j++)
+        for (const auto& varNoChain: chain[variavel])
         {
-            string varNoChain = chain[variavel][j];
-            for (int k = 0; k < regras[varNoChain].size(); k++)
+            for (const auto& regra: regras[varNoChain])
             {
-                if (find(regras[variavel].begin(), regras[variavel].end(), regras[varNoChain][k]) == regras[variavel].end())
+                if (find(regras[variavel].begin(), regras[variavel].end(), regra) == regras[variavel].end())
                 {
-                    adicionar_regra(variavel, regras[varNoChain][k]);
+                    adicionar_regra(variavel, regra);
                 }
             }
         }
     }
+    
 }
 
-/*
-void Glc::term()
-{
-    // Conjunto de variáveis que produzem terminais
-    set<string> terminais;
-
-    // Adiciona variáveis que produzem diretamente terminais
-    for (int i = 0; i < ordemRegras.size(); i++) {
-        string var = ordemRegras[i];
-        bool encontrou_terminal = false;
-        for (int j = 0; j < regras[var].size() and !encontrou_terminal; j++) {
-            string regra = regras[var][j];
-            bool produz_terminal = true;
-            for (int k = 0; k < regra.size(); k++) {
-                if (isupper(regra[k])) {
-                    produz_terminal = false;
-                }
-            }
-            if (produz_terminal) {
-                terminais.insert(var);
-                encontrou_terminal = true;  // Sai do loop interno
-            }
-        }
-    }
-
-    // Itera até que não haja mais mudanças no conjunto de terminais
-    bool mudou;
-    do {
-        mudou = false;
-        for (int i = 0; i < ordemRegras.size(); i++) {
-            string var = ordemRegras[i];
-            if (terminais.find(var) == terminais.end()) {
-                bool encontrou_terminal = false;
-                for (int j = 0; j < regras[var].size() and !encontrou_terminal; j++) {
-                    string regra = regras[var][j];
-                    bool produz_terminal = true;
-                    for (int k = 0; k < regra.size(); k++) {
-                        if (isupper(regra[k]) and terminais.find(string(1, regra[k])) == terminais.end()) {
-                            produz_terminal = false;
-                        }
-                    }
-                    if (produz_terminal) {
-                        terminais.insert(var);
-                        mudou = true;
-                        encontrou_terminal = true;  // Sai do loop interno
-                    }
-                }
-            }
-        }
-    } while (mudou);
-
-    // Cria o vetor das variáveis que não produzem terminais
-    vector<string> nao_terminais;
-    set_difference(ordemRegras.begin(), ordemRegras.end(), terminais.begin(), terminais.end(), back_inserter(nao_terminais));
-
-    for (int i = 0; i < nao_terminais.size(); i++) {
-        string var = nao_terminais[i];
-        // Remove a variável e as regras produzidas por ela
-        remover_variavel(var);
-        for (int j = 0; j < ordemRegras.size(); j++) {
-            string v = ordemRegras[j];
-            for (int k = 0; k < regras[v].size(); k++) {
-                string regra = regras[v][k];
-                if (regra.find(var) != string::npos) {
-                    remover_regra(v, regra);
-                }
-            }
-        }
-    }
-} */
+// 4- Remoção de símbolos inúteis
 
 void Glc::term(){
     // Conjunto de variáveis que produzem terminais
@@ -460,15 +403,19 @@ void Glc::term(){
     vector<string> nao_terminais;
     set_difference(ordemRegrasSet.begin(), ordemRegrasSet.end(), terminais.begin(), terminais.end(), back_inserter(nao_terminais));
 
-    for (int i = 0; i < nao_terminais.size(); i++) {
+    for (int i = 0; i < nao_terminais.size(); i++) 
+    {
         string var = nao_terminais[i];
         // Remove a variável e as regras produzidas por ela
         remover_variavel(var);
-        for (int j = 0; j < ordemRegras.size(); j++) {
+        for (int j = 0; j < ordemRegras.size(); j++) 
+        {
             string v = ordemRegras[j];
-            for (int k = 0; k < regras[v].size(); k++) {
+            for (int k = 0; k < regras[v].size(); k++) 
+            {
                 string regra = regras[v][k];
-                if (regra.find(var) != string::npos) {
+                if (regra.find(var) != string::npos) 
+                {
                     remover_regra(v, regra);
                 }
             }
@@ -483,28 +430,34 @@ void Glc::reach()
 {
     // Cria o reach, o prev e o new
     vector<string> reach;
-    reach.push_back(ordemRegras[0]); // O símbolo inicial sempre será alcançável
+    reach.push_back(ordemRegras[0]); //O símbolo inicial sempre será alcançável
     vector<string> Prev;
     vector<string> New;
 
-    do{
+    do
+    {
         New.clear();
         // new = reach-prev
         set_difference(reach.begin(), reach.end(), Prev.begin(), Prev.end(), back_inserter(New));
         Prev = reach;
-        //Pega as variáveis que estão no new
-        for (int i = 0; i < New.size(); i++){
-            string variavel = New[i];
-            //Pega cada w produzido pelas variáveis
-            for (int j = 0; j < regras[variavel].size(); j++){
-                string w = regras[variavel][j];
-                for (int k = 0; k < w.size(); k++){
-                    if (isupper(w[k])){
-                        // Converte w(char) em string
-                        string wEmString (1, w[k]);
+
+        // Pega as variáveis que estão no new
+        for (const auto& variavel: New)
+        {
+            // Pega cada regra produzida pelas variáveis
+            for (const auto& regra: regras[variavel])
+            {
+                for (const auto& caracter: regra)
+                {
+                    if (isupper(caracter))
+                    {
+                        // Converte caracter em string
+                        string charEmString (1, caracter);
+
                         //Procura a variável no reach
-                        if (find(reach.begin(), reach.end(), wEmString) == reach.end()){
-                            reach.push_back(wEmString);
+                        if (find(reach.begin(), reach.end(), charEmString) == reach.end())
+                        {
+                            reach.push_back(charEmString);
                         }
                     }
                 }
@@ -516,24 +469,31 @@ void Glc::reach()
     vector<string> inalcancaveis;
     set_difference(ordemRegras.begin(), ordemRegras.end(), reach.begin(), reach.end(), back_inserter(inalcancaveis));
 
-    for (int i = 0; i < inalcancaveis.size(); i++){
+    for (const auto& varInalc: inalcancaveis)
+    {
         // Apaga a variável e as regras produzidas por ela
-        remover_variavel(inalcancaveis[i]);
-        for (int j = 0; j < ordemRegras.size(); j++){
-            string variavel = ordemRegras[j];
-            for (int k = 0; k < regras[variavel].size(); k++){
-                string w = regras[variavel][k];
-                for (int z = 0; z < w.size(); z++){
-                    string wEmString(1, w[k]);
+        remover_variavel(varInalc);
+
+        for (const auto& variavel: ordemRegras)
+        {
+            for (const auto& regra: regras[variavel])
+            {
+                for (const auto& caracter: regra)
+                {
+                    string charEmString(1, caracter);
+
                     // Remove todas as regras que contêm a variável removida
-                    if (wEmString == inalcancaveis[i]){
-                        remover_regra(variavel, w);
+                    if (charEmString == varInalc)
+                    {
+                        remover_regra(variavel, charEmString);
                     }
                 }
             }
         }
     }
 }
+
+// 5- Passar para a FNC
 
 string Glc::capitalizar_regra(string regra, set<string> &capitalizados)
 {
