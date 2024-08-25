@@ -2,6 +2,7 @@
 #include "ArranjoBin.hpp"
 #include <algorithm>
 #include <fstream>
+#include <cctype>
 
 using namespace std;
 
@@ -88,7 +89,6 @@ void Glc::remover_regra(string var, string regra)
 {
     vector<string> &vec = regras[var];
     vec.erase(remove(vec.begin(), vec.end(), regra), vec.end());
-   
 }
 
 void Glc::remover_variavel(string var)
@@ -325,34 +325,39 @@ void Glc::regras_cadeia()
             }
         }
     }
-    
 }
 
 void Glc::reach()
 {
     // Cria o reach, o prev e o new
     vector<string> reach;
-    reach.push_back(ordemRegras[0]); //O símbolo inicial sempre será alcançável
+    reach.push_back(ordemRegras[0]); // O símbolo inicial sempre será alcançável
     vector<string> Prev;
     vector<string> New;
 
-    do{
+    do
+    {
         New.clear();
         // new = reach-prev
         set_difference(reach.begin(), reach.end(), Prev.begin(), Prev.end(), back_inserter(New));
         Prev = reach;
-        //Pega as variáveis que estão no new
-        for (int i = 0; i < New.size(); i++){
+        // Pega as variáveis que estão no new
+        for (int i = 0; i < New.size(); i++)
+        {
             string variavel = New[i];
-            //Pega cada w produzido pelas variáveis
-            for (int j = 0; j < regras[variavel].size(); j++){
+            // Pega cada w produzido pelas variáveis
+            for (int j = 0; j < regras[variavel].size(); j++)
+            {
                 string w = regras[variavel][j];
-                for (int k = 0; k < w.size(); k++){
-                    if (isupper(w[k])){
+                for (int k = 0; k < w.size(); k++)
+                {
+                    if (isupper(w[k]))
+                    {
                         // Converte w(char) em string
-                        string wEmString (1, w[k]);
-                        //Procura a variável no reach
-                        if (find(reach.begin(), reach.end(), wEmString) == reach.end()){
+                        string wEmString(1, w[k]);
+                        // Procura a variável no reach
+                        if (find(reach.begin(), reach.end(), wEmString) == reach.end())
+                        {
                             reach.push_back(wEmString);
                         }
                     }
@@ -365,17 +370,22 @@ void Glc::reach()
     vector<string> inalcancaveis;
     set_difference(ordemRegras.begin(), ordemRegras.end(), reach.begin(), reach.end(), back_inserter(inalcancaveis));
 
-    for (int i = 0; i < inalcancaveis.size(); i++){
+    for (int i = 0; i < inalcancaveis.size(); i++)
+    {
         // Apaga a variável e as regras produzidas por ela
         remover_variavel(inalcancaveis[i]);
-        for (int j = 0; j < ordemRegras.size(); j++){
+        for (int j = 0; j < ordemRegras.size(); j++)
+        {
             string variavel = ordemRegras[j];
-            for (int k = 0; k < regras[variavel].size(); k++){
+            for (int k = 0; k < regras[variavel].size(); k++)
+            {
                 string w = regras[variavel][k];
-                for (int z = 0; z < w.size(); z++){
+                for (int z = 0; z < w.size(); z++)
+                {
                     string wEmString(1, w[k]);
                     // Remove todas as regras que contêm a variável removida
-                    if (wEmString == inalcancaveis[i]){
+                    if (wEmString == inalcancaveis[i])
+                    {
                         remover_regra(variavel, w);
                     }
                 }
@@ -383,6 +393,46 @@ void Glc::reach()
         }
     }
 }
+
+string Glc::capitalizar_regra(string regra, set<string> &capitalizados)
+{
+    /*
+        Transforma todos os terminais de uma regra em variáveis,
+        elimina a regra antiga, em caso de mudança e adiciona a
+        variável nova na gramática.
+    */
+    bool foiModificada = false;
+    string novaRegra = "";
+
+    if (regra.length() == 1 && islower(regra[0]))
+        return novaRegra;
+
+    for (char c : regra)
+    {
+        // Caso seja um terminal, precisamos modificá-lo
+        if (islower(c))
+        {
+            foiModificada = true;
+            string cZao = string(1, toupper(c)) + "'";
+            // A nova regra é a capitalização de c com adição de "'".
+            novaRegra += cZao;
+
+            // Busca se a regra já não existe antes de adicionar na gramática.
+            if (capitalizados.find(novaRegra) == capitalizados.end())
+            {
+                capitalizados.insert(cZao);
+                adicionar_regra(novaRegra, string(1, c));
+            }
+        }
+        else
+        {
+            novaRegra += c;
+        }
+    }
+
+    return novaRegra;
+}
+
 
 // Later removal ==================
 

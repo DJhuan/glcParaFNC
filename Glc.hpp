@@ -6,9 +6,9 @@
 #include <string>
 #include <set>
 
-//remover
-#include<iostream>
-//remover
+// remover
+#include <iostream>
+// remover
 
 using namespace std;
 
@@ -18,8 +18,10 @@ private:
     // Simbolo inicial da gramática será sempre o primeiro item do vetor;
     unordered_map<string, vector<string>> regras;
     vector<string> ordemRegras;
-    static bool eh_regra_anulavel(string regra, set<string>& anulaveis);
+    static bool eh_regra_anulavel(string regra, set<string> &anulaveis);
     set<string> encontrar_anulaveis();
+    set<string> *produzir_variantes(string regra, vector<int> posicoes, set<string> &anulaveis);
+    string capitalizar_regra(string regra, set<string> &capitalizados);
 
 public:
     Glc();
@@ -27,7 +29,6 @@ public:
     void adicionar_regra(string var, string prod);
     void remover_regra(string var, string regra);
     void remover_variavel(string var);
-    set<string>* produzir_variantes(string regra, vector<int> posicoes, set<string>& anulaveis);
 
     string stringficar();
     void carregar_arquivo(string caminho);
@@ -36,6 +37,7 @@ public:
     void print();
     void regras_cadeia();
     void reach();
+    void paraFNC();
 };
 
 #endif // GLC_H
