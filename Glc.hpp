@@ -16,6 +16,7 @@ class Glc
 {
 private:
     // Simbolo inicial da gramática será sempre o primeiro item do vetor;
+    int num_t = 0;
     unordered_map<string, vector<string>> regras;
     vector<string> ordemRegras;
     static bool eh_regra_anulavel(string regra, set<string> &anulaveis);
@@ -23,6 +24,7 @@ private:
     set<string> *produzir_variantes(string regra, vector<int> posicoes, set<string> &anulaveis);
     string capitalizar_regra(string regra, set<string> &capitalizados);
     vector<string> separar_regra(string regra);
+    string agrupar_dois(vector<string> &vetor, unordered_map<string, string> &jaAgrupados);
 
 public:
     Glc();
@@ -30,7 +32,6 @@ public:
     void adicionar_regra(string var, string prod);
     void remover_regra(string var, string regra);
     void remover_variavel(string var);
-
     string stringficar();
     void carregar_arquivo(string caminho);
     void escrever_arquivo(string caminho);

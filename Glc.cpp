@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cctype>
+#include <numeric>
 
 using namespace std;
 
@@ -447,7 +448,7 @@ vector<string> Glc::separar_regra(string regra)
     vector<string> compRegra;
     string componente = "";
     int i = 0;
-    int tam = regra.length();
+    auto tam = regra.length();
 
     while (i < tam)
     {
@@ -470,7 +471,7 @@ vector<string> Glc::separar_regra(string regra)
                 componente += regra[i];
                 i++;
             }
-            
+
             compRegra.push_back(componente);
             componente = "";
         }
@@ -483,54 +484,110 @@ vector<string> Glc::separar_regra(string regra)
     return compRegra;
 }
 
+string Glc::agrupar_dois(vector<string> &vetor, unordered_map<string, string> &jaAgrupados)
+{
+    if (vetor.size() <= 2)
+    {
+        // Se o vetor tem 2 ou menos itens retorna ele como está.
+        return vetor[0] + (vetor.size() > 1 ? vetor[1] : "");
+    }
 
+    string ultimoT;
+    int tamVet = vetor.size();
+    while (tamVet > 2)
+    {
+        string ultimo = vetor.back();
+        vetor.pop_back();
+        string penultimo = vetor.back();
+        vetor.pop_back();
+
+        string novoGrupo = penultimo + ultimo;
+
+        // Verifica se o par já não foi agrupado antes
+        if (jaAgrupados.find(novoGrupo) != jaAgrupados.end())
+        {
+            vetor.push_back(jaAgrupados[novoGrupo]);
+        }
+        else
+        {
+            // Nova variável Tnº.
+            string variavelT = "T" + to_string(num_t++);
+            ultimoT = variavelT;
+
+            // Adiciona o novo par agrupado.
+            jaAgrupados[novoGrupo] = variavelT;
+            nova_variavel(variavelT); // Verifique se essa função está corretamente implementada
+            adicionar_regra(variavelT, novoGrupo); // Verifique se essa função está corretamente implementada
+
+            vetor.push_back(jaAgrupados[novoGrupo]);
+        }
+        tamVet--;
+    }
+
+    return vetor[0] + vetor[1];
+}
+
+void Glc::paraFNC()
+{
+    // Set para guardar as novas variáveis já criadas
+    set<string> novasVariaveis;
+    // Loop entre as variáveis
+    for (auto &variavel : ordemRegras)
+    {
+        vector<string> &vetVar = regras[variavel];
+
+        // Loop entre as regras
+        for (auto iterador = vetVar.begin(); iterador != vetVar.end(); iterador++)
+        {
+            string regra = *iterador;
+            string capit = capitalizar_regra(regra, novasVariaveis);
+
+            // Se a regra possuir um ou mais terminais ela é substituida
+            if (capit != "")
+            {
+                remover_regra(variavel, regra);
+                iterador = vetVar.insert(iterador, capit);
+            }
+        }
+    }
+
+    for (auto &novaVar : novasVariaveis)
+    {
+        nova_variavel(novaVar);
+        adicionar_regra(novaVar, string(1, tolower(novaVar[0])));
+    }
+
+    unordered_map<string, string> jaAgrupados;
+    int i = 0;
+    while (i < ordemRegras.size())
+    {
+        vector<string> &vetVar = regras[ordemRegras[i]];
+        vector<string> novasRegras;
+
+        for (auto iterador = vetVar.begin(); iterador != vetVar.end();)
+        {
+            string regra = *iterador;
+            vector<string> regraSeparada = separar_regra(regra);
+
+            if (regraSeparada.size() > 2)
+            {
+                string regraReduzida = agrupar_dois(regraSeparada, jaAgrupados);
+                iterador = vetVar.erase(iterador);
+                iterador = vetVar.insert(iterador, regraReduzida);
+            }
+            else
+            {
+                ++iterador;
+            }
+        }
+        i++;
+    }
+}
 
 // Later removal ==================
 
 void Glc::print()
 {
-    cout << "Regra: ";
-    for (auto &p : separar_regra("."))
-    {
-        cout << p << ' ';
-    }
-    cout << endl;
-    cout << "Regra: ";
-    for (auto &p : separar_regra("a"))
-    {
-        cout << p << ' ';
-    }
-    cout << endl;
-    cout << "Regra: ";
-    for (auto &p : separar_regra("abcd"))
-    {
-        cout << p << ' ';
-    }
-    cout << endl;
-    cout << "Regra: ";
-    for (auto &p : separar_regra("AaC"))
-    {
-        cout << p << ' ';
-    }
-    cout << endl;
-    cout << "Regra: ";
-    for (auto &p : separar_regra("A12"))
-    {
-        cout << p << ' ';
-    }
-    cout << endl;
-    cout << "Regra: ";
-    for (auto &p : separar_regra("A12aA1BAF"))
-    {
-        cout << p << ' ';
-    }
-    cout << endl;
-    cout << "Regra: ";
-    for (auto &p : separar_regra("D'FC'"))
-    {
-        cout << p << ' ';
-    }
-    cout << endl;
 }
 
 // Later removal ==================
