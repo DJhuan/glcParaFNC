@@ -16,7 +16,11 @@ int main(int argc, char *argv[])
         return 2;
     }
     gramatica.carregar_arquivo(argv[1]);
-    gramatica.paraFNC();
+    gramatica.reach();
+    cout << gramatica.stringficar();
+    cout << "===============" << endl;
+    gramatica.remover_recursividade_inicial();
+    gramatica.eliminar_lambdas();
     cout << gramatica.stringficar();
 
     return 0;

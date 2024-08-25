@@ -35,6 +35,7 @@ public:
     string stringficar();
     void carregar_arquivo(string caminho);
     void escrever_arquivo(string caminho);
+    void remover_recursividade_inicial();
     void eliminar_lambdas();
     void print();
     void regras_cadeia();
