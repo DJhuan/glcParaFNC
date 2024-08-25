@@ -157,6 +157,35 @@ string Glc::stringficar()
     return stringGramatica;
 }
 
+void Glc::remover_recursividade_inicial() 
+{
+    string variavel_inicial = ordemRegras[0]; // Supondo que o símbolo inicial é sempre o primeiro
+
+    // Checa se a variável inicial possui recursividade
+    vector<string> producoes_inicial = regras[variavel_inicial];
+    bool tem_recursividade = false;
+
+    for (int i = 0; i < producoes_inicial.size(); ++i) {
+        if (producoes_inicial[i].find(variavel_inicial) != string::npos) {
+            tem_recursividade = true;
+        }
+    }
+
+    if (tem_recursividade) {
+        string nova_var = variavel_inicial + "'";
+        
+        // Adiciona a nova variável à lista de variáveis e regras
+        nova_variavel(nova_var);  
+        regras[nova_var].push_back(variavel_inicial);  // Regra S' -> S
+
+        // Atualiza a ordem das variáveis para inserir a nova variável inicial (S') no início
+        ordemRegras.insert(ordemRegras.begin(), nova_var); // Insere a nova variável antes do símbolo inicial original
+
+        // Remove a nova variável do final da lista, se estiver presente
+        ordemRegras.erase(remove(ordemRegras.begin() + 1, ordemRegras.end(), nova_var), ordemRegras.end());
+    }
+}
+
 void Glc::eliminar_lambdas()
 {
     set<string> anulaveis = encontrar_anulaveis();
