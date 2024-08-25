@@ -7,9 +7,9 @@ int main(int argc, char *argv[])
 {
     Glc gramatica;
     gramatica.carregar_arquivo(argv[1]);
-    gramatica.regras_cadeia();
-    //cout << gramatica.stringficar();
-    //cout << "===============" << endl;
+    gramatica.reach();
+    cout << gramatica.stringficar();
+    cout << "===============" << endl;
     gramatica.remover_recursividade_inicial();
     gramatica.eliminar_lambdas();
     cout << gramatica.stringficar();

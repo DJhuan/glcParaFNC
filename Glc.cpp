@@ -7,6 +7,7 @@ using namespace std;
 
 Glc::Glc() {}
 
+
 bool Glc::eh_regra_anulavel(string regra, set<string> &anulaveis)
 {
     if (regra == ".")
@@ -86,15 +87,23 @@ void Glc::nova_variavel(string var)
 
 void Glc::remover_regra(string var, string regra)
 {
-    vector<string> &vec = regras[var];
-    vec.erase(remove(vec.begin(), vec.end(), regra), vec.end());
-   
+    auto pos = find(regras[var].begin(), regras[var].end(), regra);
+
+    if (pos != regras[var].end())
+    {
+        regras[var].erase(pos);
+    }
 }
 
 void Glc::remover_variavel(string var)
 {
     regras.erase(var);
-    ordemRegras.erase(remove(ordemRegras.begin(), ordemRegras.end(), var), ordemRegras.end());
+    auto pos = find(ordemRegras.begin(), ordemRegras.end(), var);
+
+    if (pos != ordemRegras.end())
+    {
+        ordemRegras.erase(pos);
+    }
 }
 
 void Glc::carregar_arquivo(string caminho)
@@ -293,14 +302,14 @@ set<string> *Glc::produzir_variantes(string regra, vector<int> posicoes, set<str
     return variacoes;
 }
 
+
 void Glc::regras_cadeia()
 {
     // Cria o chain
     unordered_map<string, vector<string>> chain;
-    for (int i = 0; i < ordemRegras.size(); i++)
+    for (const auto& variavel: ordemRegras)
     {
         // Cria o prev e o new
-        string variavel = ordemRegras[i];
         chain[variavel].push_back(variavel);
         vector<string> Prev;
         vector<string> New;
@@ -310,17 +319,17 @@ void Glc::regras_cadeia()
             New.clear();
             set_difference(chain[variavel].begin(), chain[variavel].end(), Prev.begin(), Prev.end(), back_inserter(New));
             Prev = chain[variavel];
-            for (int j = 0; j < New.size(); j++)
+            for (const auto& varNoNew: New)
             {
-                vector<string> &vetor = regras[New[j]];
-                for (int k = 0; k < vetor.size(); k++)
+                vector<string> &vetor = regras[varNoNew];
+                for (const auto& regra: vetor)
                 {
-                    if (vetor[k].size() == 1 and isupper(vetor[k][0]))
+                    if (regra.size() == 1 and isupper(regra[0]))
                     {
                         // Se for um caracter maiúsculo e não estiver no chain, adiciona no chain
-                        if (find(chain[variavel].begin(), chain[variavel].end(), vetor[k]) == chain[variavel].end())
+                        if (find(chain[variavel].begin(), chain[variavel].end(), regra) == chain[variavel].end())
                         {
-                            chain[variavel].push_back(vetor[k]);
+                            chain[variavel].push_back(regra);
                         }
                     }
                 }
@@ -329,27 +338,24 @@ void Glc::regras_cadeia()
     }
 
     // Tira as regras de cadeia da gramática
-    for (int i = 0; i < ordemRegras.size(); i++)
+    for (const auto& variavel: ordemRegras)
     {
-        string variavel = ordemRegras[i];
-        for (int j = 0; j < chain[variavel].size(); j++)
+        for (const auto& regra: chain[variavel])
         {
-            remover_regra(variavel, chain[variavel][j]);
+            remover_regra(variavel, regra);
         }
     }
 
     // Adiciona as regras das variáveis retiradas de cada variável
-    for (int i = 0; i < ordemRegras.size(); i++)
+    for (const auto& variavel: ordemRegras)
     {
-        string variavel = ordemRegras[i];
-        for (int j = 0; j < chain[variavel].size(); j++)
+        for (const auto& varNoChain: chain[variavel])
         {
-            string varNoChain = chain[variavel][j];
-            for (int k = 0; k < regras[varNoChain].size(); k++)
+            for (const auto& regra: regras[varNoChain])
             {
-                if (find(regras[variavel].begin(), regras[variavel].end(), regras[varNoChain][k]) == regras[variavel].end())
+                if (find(regras[variavel].begin(), regras[variavel].end(), regra) == regras[variavel].end())
                 {
-                    adicionar_regra(variavel, regras[varNoChain][k]);
+                    adicionar_regra(variavel, regra);
                 }
             }
         }
@@ -365,24 +371,30 @@ void Glc::reach()
     vector<string> Prev;
     vector<string> New;
 
-    do{
+    do
+    {
         New.clear();
         // new = reach-prev
         set_difference(reach.begin(), reach.end(), Prev.begin(), Prev.end(), back_inserter(New));
         Prev = reach;
-        //Pega as variáveis que estão no new
-        for (int i = 0; i < New.size(); i++){
-            string variavel = New[i];
-            //Pega cada w produzido pelas variáveis
-            for (int j = 0; j < regras[variavel].size(); j++){
-                string w = regras[variavel][j];
-                for (int k = 0; k < w.size(); k++){
-                    if (isupper(w[k])){
-                        // Converte w(char) em string
-                        string wEmString (1, w[k]);
+
+        // Pega as variáveis que estão no new
+        for (const auto& variavel: New)
+        {
+            // Pega cada regra produzida pelas variáveis
+            for (const auto& regra: regras[variavel])
+            {
+                for (const auto& caracter: regra)
+                {
+                    if (isupper(caracter))
+                    {
+                        // Converte caracter em string
+                        string charEmString (1, caracter);
+
                         //Procura a variável no reach
-                        if (find(reach.begin(), reach.end(), wEmString) == reach.end()){
-                            reach.push_back(wEmString);
+                        if (find(reach.begin(), reach.end(), charEmString) == reach.end())
+                        {
+                            reach.push_back(charEmString);
                         }
                     }
                 }
@@ -394,18 +406,23 @@ void Glc::reach()
     vector<string> inalcancaveis;
     set_difference(ordemRegras.begin(), ordemRegras.end(), reach.begin(), reach.end(), back_inserter(inalcancaveis));
 
-    for (int i = 0; i < inalcancaveis.size(); i++){
+    for (const auto& varInalc: inalcancaveis)
+    {
         // Apaga a variável e as regras produzidas por ela
-        remover_variavel(inalcancaveis[i]);
-        for (int j = 0; j < ordemRegras.size(); j++){
-            string variavel = ordemRegras[j];
-            for (int k = 0; k < regras[variavel].size(); k++){
-                string w = regras[variavel][k];
-                for (int z = 0; z < w.size(); z++){
-                    string wEmString(1, w[k]);
+        remover_variavel(varInalc);
+
+        for (const auto& variavel: ordemRegras)
+        {
+            for (const auto& regra: regras[variavel])
+            {
+                for (const auto& caracter: regra)
+                {
+                    string charEmString(1, caracter);
+
                     // Remove todas as regras que contêm a variável removida
-                    if (wEmString == inalcancaveis[i]){
-                        remover_regra(variavel, w);
+                    if (charEmString == varInalc)
+                    {
+                        remover_regra(variavel, charEmString);
                     }
                 }
             }
