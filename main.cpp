@@ -6,11 +6,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     Glc gramatica;
-    gramatica.carregar_arquivo(argv[1]);
-    cout << gramatica.stringficar();
-    cout << "===============" << endl;
-    gramatica.paraFNC();
-    cout << gramatica.stringficar();
+    gramatica.print();
 
     return 0;
 }

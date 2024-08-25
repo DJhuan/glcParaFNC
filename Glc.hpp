@@ -22,6 +22,7 @@ private:
     set<string> encontrar_anulaveis();
     set<string> *produzir_variantes(string regra, vector<int> posicoes, set<string> &anulaveis);
     string capitalizar_regra(string regra, set<string> &capitalizados);
+    vector<string> separar_regra(string regra);
 
 public:
     Glc();

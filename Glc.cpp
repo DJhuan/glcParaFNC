@@ -433,20 +433,104 @@ string Glc::capitalizar_regra(string regra, set<string> &capitalizados)
     return novaRegra;
 }
 
+vector<string> Glc::separar_regra(string regra)
+{
+    /*
+        Separa a regra em seus componentes já que mais de um caracter pode
+        ser usado para representar uma variável.
+        A função entende que um componente é:
+            Um caracter minúsculo
+            Um caracter maiúsculo seguido por zero ou mais
+                - Caracteres numéricos {0..9}
+                - Aspas simples {'} (apenas uma é admitida)
+    */
+    vector<string> compRegra;
+    string componente = "";
+    int i = 0;
+    int tam = regra.length();
+
+    while (i < tam)
+    {
+        char c = regra[i];
+
+        if ((c >= 'a' && c <= 'z') || (c == '.'))
+        {
+            // If it's a terminal, add it directly as a component
+            compRegra.push_back(string(1, c));
+            i++;
+        }
+        else if (c >= 'A' && c <= 'Z')
+        {
+            componente += c;
+            i++;
+
+            // Verifica se a variável é seguida por números
+            while (i < tam && ((regra[i] >= '0' && regra[i] <= '9') || (regra[i] == '\'')))
+            {
+                componente += regra[i];
+                i++;
+            }
+            
+            compRegra.push_back(componente);
+            componente = "";
+        }
+        else
+        {
+            i++;
+        }
+    }
+
+    return compRegra;
+}
+
+
 
 // Later removal ==================
 
 void Glc::print()
 {
-    set<string> a;
-    a.insert("A");
-    a.insert("B");
-    if (eh_regra_anulavel("AB", a))
-        cout << "1SIM\n";
-    if (eh_regra_anulavel("A", a))
-        cout << "2SIM\n";
-    if (eh_regra_anulavel("CA", a))
-        cout << "3SIM\n";
+    cout << "Regra: ";
+    for (auto &p : separar_regra("."))
+    {
+        cout << p << ' ';
+    }
+    cout << endl;
+    cout << "Regra: ";
+    for (auto &p : separar_regra("a"))
+    {
+        cout << p << ' ';
+    }
+    cout << endl;
+    cout << "Regra: ";
+    for (auto &p : separar_regra("abcd"))
+    {
+        cout << p << ' ';
+    }
+    cout << endl;
+    cout << "Regra: ";
+    for (auto &p : separar_regra("AaC"))
+    {
+        cout << p << ' ';
+    }
+    cout << endl;
+    cout << "Regra: ";
+    for (auto &p : separar_regra("A12"))
+    {
+        cout << p << ' ';
+    }
+    cout << endl;
+    cout << "Regra: ";
+    for (auto &p : separar_regra("A12aA1BAF"))
+    {
+        cout << p << ' ';
+    }
+    cout << endl;
+    cout << "Regra: ";
+    for (auto &p : separar_regra("D'FC'"))
+    {
+        cout << p << ' ';
+    }
+    cout << endl;
 }
 
 // Later removal ==================
