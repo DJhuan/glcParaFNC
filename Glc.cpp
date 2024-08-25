@@ -3,11 +3,39 @@
 #include <algorithm>
 #include <fstream>
 #include <cctype>
-#include <numeric>
 
 using namespace std;
 
 Glc::Glc() {}
+
+void Glc::remover_recursividade_inicial() 
+{
+    string variavel_inicial = ordemRegras[0]; // Supondo que o símbolo inicial é sempre o primeiro
+
+    // Checa se a variável inicial possui recursividade
+    vector<string> producoes_inicial = regras[variavel_inicial];
+    bool tem_recursividade = false;
+
+    for (int i = 0; i < producoes_inicial.size(); ++i) {
+        if (producoes_inicial[i].find(variavel_inicial) != string::npos) {
+            tem_recursividade = true;
+        }
+    }
+
+    if (tem_recursividade) {
+        string nova_var = variavel_inicial + "'";
+
+        // Adiciona a nova variável à lista de variáveis e regras
+        nova_variavel(nova_var);  
+        regras[nova_var].push_back(variavel_inicial);  // Regra S' -> S
+
+        // Atualiza a ordem das variáveis para inserir a nova variável inicial (S') no início
+        ordemRegras.insert(ordemRegras.begin(), nova_var); // Insere a nova variável antes do símbolo inicial original
+
+        // Remove a nova variável do final da lista, se estiver presente
+        ordemRegras.erase(remove(ordemRegras.begin() + 1, ordemRegras.end(), nova_var), ordemRegras.end());
+    }
+}
 
 bool Glc::eh_regra_anulavel(string regra, set<string> &anulaveis)
 {
@@ -329,7 +357,7 @@ void Glc::regras_cadeia()
     }
 }
 
-
+/*
 void Glc::term()
 {
     // Conjunto de variáveis que produzem terminais
@@ -398,6 +426,57 @@ void Glc::term()
             }
         }
     }
+} */
+
+void Glc::term(){
+    // Conjunto de variáveis que produzem terminais
+    set<string> terminais;
+    set<string> prev;
+
+    do
+    {
+        prev = terminais;
+        for (const auto& variavel: ordemRegras)
+        {
+            for (const auto& regra: regras[variavel])
+            {
+                for (const auto& caracter: regra)
+                {
+                    bool cEmPrev = prev.find(string(1, caracter)) != prev.end();
+                    if (islower(caracter) or cEmPrev){
+                        terminais.insert(variavel);
+                    }
+                }
+            }
+        }
+    } while (prev != terminais);
+
+    set<string>ordemRegrasSet;
+    for (auto& variavel: ordemRegras)
+    {
+        ordemRegrasSet.insert(variavel);
+    }
+
+    vector<string> nao_terminais;
+    set_difference(ordemRegrasSet.begin(), ordemRegrasSet.end(), terminais.begin(), terminais.end(), back_inserter(nao_terminais));
+
+    for (int i = 0; i < nao_terminais.size(); i++) {
+        string var = nao_terminais[i];
+        // Remove a variável e as regras produzidas por ela
+        remover_variavel(var);
+        for (int j = 0; j < ordemRegras.size(); j++) {
+            string v = ordemRegras[j];
+            for (int k = 0; k < regras[v].size(); k++) {
+                string regra = regras[v][k];
+                if (regra.find(var) != string::npos) {
+                    remover_regra(v, regra);
+                }
+            }
+        }
+    }
+
+
+
 }
 
 void Glc::reach()
@@ -645,10 +724,3 @@ void Glc::paraFNC()
     }
 }
 
-// Later removal ==================
-
-void Glc::print()
-{
-}
-
-// Later removal ==================

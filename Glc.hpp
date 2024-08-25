@@ -16,7 +16,7 @@ class Glc
 {
 private:
     // Simbolo inicial da gramática será sempre o primeiro item do vetor;
-    int num_t = 0;
+    int num_t = 1;
     unordered_map<string, vector<string>> regras;
     vector<string> ordemRegras;
     static bool eh_regra_anulavel(string regra, set<string> &anulaveis);
@@ -37,7 +37,6 @@ public:
     void escrever_arquivo(string caminho);
     void remover_recursividade_inicial();
     void eliminar_lambdas();
-    void print();
     void regras_cadeia();
     void term();
     void reach();
