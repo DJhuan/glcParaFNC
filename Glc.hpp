@@ -39,6 +39,7 @@ public:
     void eliminar_lambdas();
     void print();
     void regras_cadeia();
+    void term();
     void reach();
     void paraFNC();
 };

@@ -23,5 +23,6 @@ int main(int argc, char *argv[])
     gramatica.eliminar_lambdas();
     cout << gramatica.stringficar();
 
+
     return 0;
 }
